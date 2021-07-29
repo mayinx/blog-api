@@ -1,7 +1,7 @@
 const express = require("express");
-const db = require("./lib/db");
 const cors = require("cors");
 const mongoose = require("mongoose");
+const Article = require("./models/article.js");
 
 /*
   We create an express app calling
@@ -25,29 +25,7 @@ app.use(function logRequests(req, res, next) {
   next();
 });
 
-/*
-  Endpoint to handle GET requests to the root URI "/"
-*/
-app.get("/", (req, res) => {
-  res.json({
-    "/articles": "read and create new articles",
-    "/articles/:id": "read, update and delete an individual article",
-  });
-});
-
-app.get("/articles", (req, res) => {
-  db.findAll()
-    .then((articles) => {
-      res.send(articles);
-    })
-    .catch(() => {
-      res.status(500);
-      res.json({
-        error: "Something went wrong, please try again later",
-      });
-    });
-});
-
+/* CUSTOM MIDDLEWARE */
 function validateRequest(req, res, next) {
   if (!req.body.title) {
     res.status(400).json({
@@ -65,10 +43,20 @@ function validateRequest(req, res, next) {
   next();
 }
 
-app.post("/articles", validateRequest, (req, res) => {
-  db.insert(req.body)
-    .then((newArticle) => {
-      res.status(201).send(newArticle);
+/*
+  Endpoint to handle GET requests to the root URI "/"
+*/
+app.get("/", (req, res) => {
+  res.json({
+    "/articles": "read and create new articles",
+    "/articles/:id": "read, update and delete an individual article",
+  });
+});
+
+app.get("/articles", (req, res) => {
+  Article.find({})
+    .then((articles) => {
+      res.send(articles);
     })
     .catch(() => {
       res.status(500);
@@ -78,9 +66,31 @@ app.post("/articles", validateRequest, (req, res) => {
     });
 });
 
+app.post("/articles", validateRequest, (req, res) => {
+  Article.create(req.body)
+    .then((newArticle) => {
+      res.status(201).send(newArticle);
+    })
+    .catch((error) => {
+      console.log("Nohooo", error);
+      res.status(500);
+      res.json(error);
+    });
+  // db.insert(req.body)
+  //   .then((newArticle) => {
+  //     res.status(201).send(newArticle);
+  //   })
+  //   .catch(() => {
+  //     res.status(500);
+  //     res.json({
+  //       error: "Something went wrong, please try again later",
+  //     });
+  //   });
+});
+
 app.get("/articles/:id", (req, res) => {
   const { id } = req.params;
-  db.findById(id)
+  Article.findById(id)
     .then((article) => {
       if (!article) {
         res.status(404).end();
@@ -99,7 +109,9 @@ app.get("/articles/:id", (req, res) => {
 app.patch("/articles/:id", (req, res) => {
   const { id } = req.params;
 
-  db.updateById(id, req.body)
+  // db.updateById(id, req.body)
+  // Article.updateOne({ _id: id }, req.body)
+  Article.findByIdAndUpdate(id, req.body, { new: true })
     .then((updatedPost) => {
       if (!updatedPost) {
         res.status(404).end();
@@ -118,7 +130,8 @@ app.patch("/articles/:id", (req, res) => {
 app.delete("/articles/:id", (req, res) => {
   const { id } = req.params;
 
-  db.deleteById(id)
+  // db.deleteById(id)
+  Article.findByIdAndDelete(id)
     .then(() => {
       res.status(204).end();
     })
@@ -138,6 +151,7 @@ mongoose
   .connect("mongodb://localhost:27017/blog-api", {
     useUnifiedTopology: true,
     useNewUrlParser: true,
+    useFindAndModify: false,
   })
   .then(() => {
     console.log("Connecteed to mongo");
