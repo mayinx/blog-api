@@ -9,10 +9,10 @@ GET http://localhost:4000/api/books HTTP/1.1
 
 
 ### List all books filtered by genre
-GET http://localhost:4000/api/books?genre=action&isRead=true HTTP/1.1
+GET http://localhost:4000/api/books?genre=action&isRead=false HTTP/1.1
 
 ### List all books filtered by isRead-status
-GET http://localhost:4000/api/books?isRead=true HTTP/1.1
+GET http://localhost:4000/api/books?isRead=false HTTP/1.1
 
 
 ### Create a new book

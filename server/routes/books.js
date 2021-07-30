@@ -33,6 +33,8 @@ router.get("/", (req, res) => {
   //   query.isRead = isRead;
   // }
 
+  // _.pick(req.body, "genre", "isRead")
+  console.log(req.query);
   Book.find(req.query)
     .limit(5)
     .sort("-createdAt")
@@ -51,7 +53,7 @@ router.get("/", (req, res) => {
 
 // router.post("/resources",  (req, res) => {
 router.post("/", (req, res) => {
-  Book.create(_.pick(req.body, "genre", "isRead"))
+  Book.create(_.pick(req.body, "title", "author", "genre", "isRead"))
     .then((newResource) => {
       res.status(201).send(newResource);
     })
