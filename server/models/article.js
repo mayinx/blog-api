@@ -3,18 +3,23 @@ const { Schema } = mongoose;
 
 const articlesSchema = new Schema(
   {
-    title: String,
     title: {
       type: String,
       default: "My default title",
       required: true,
     },
     body: String,
-    author: String,
+    author: {
+      type: Schema.Types.ObjectId,
+      ref: "Author",
+    },
     comments: [{ body: String, date: Date }],
     votes: {
       up: Number,
       down: Number,
+    },
+    tags: {
+      type: [String],
     },
   },
   {
